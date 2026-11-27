@@ -70,3 +70,113 @@
   - `showWelcome()`, `showGrids(Grid ownGrid, Grid enemyView)`, `askCoordinate()`, `showAttackResult(String attackerName, Coordinate target, AttackResult result)`, `showGameResult(String winnerName)`
 - `service.ConsoleGameDisplay`(implements `GameDisplay`): Реалізація вводу/виводу у консолі.
 - `GameController`: Головний клас, що керує грою. Отримує всі залежності через конструктор.
+
+### 2.3. UML-діаграма (спрощена)
+```mermaid
+classDiagram
+    class Main { 
+        +main()
+    }
+
+    class GameController {
+        -Player human
+        -Player bot
+        -GameDisplay display
+        +GameController(Player, Player, GameDisplay)
+        +startGame()
+    }
+
+    class Player {
+        <<interface>>
+        +getName() String
+        +getOwnGrid() Grid
+        +chooseTarget(Grid) Coordinate
+    }
+
+    class HumanPlayer {
+        -String name
+        -Grid ownGrid
+        -GameDisplay display
+        +getName() String
+        +getOwnGrid() Grid
+        +chooseTarget(Grid) Coordinate
+    }
+
+    class BotPlayer {
+        -String name
+        -Grid ownGrid
+        +getName() String
+        +getOwnGrid() Grid
+        +chooseTarget(Grid) Coordinate
+    }
+
+    class GameDisplay {
+        <<interface>>
+        +showWelcome()
+        +showGrids(Grid, Grid)
+        +askCoordinate() Coordinate
+        +showAttackResult(String, Coordinate, AttackResult)
+        +showGameResult(String)
+    }
+
+    class ConsoleGameDisplay {
+        +showWelcome()
+        +showGrids(Grid, Grid)
+        +askCoordinate() Coordinate
+        +showAttackResult(String, Coordinate, AttackResult)
+        +showGameResult(String)
+    }
+
+    class Grid {
+        -int size
+        -List~Ship~ ships
+        -Set~Coordinate~ attackedCoordinates
+        +placeShip(Ship) boolean
+        +processAttack(Coordinate) AttackResult
+        +isAlreadyAttacked(Coordinate) boolean
+        +isWithinBounds(Coordinate) boolean
+        +allShipsSunk() boolean
+    }
+
+    class Ship {
+        -Set~Coordinate~ coordinates
+        -Set~Coordinate~ hits
+        +occupies(Coordinate) boolean
+        +registerHit(Coordinate) boolean
+        +isSunk() boolean
+    }
+
+    class Coordinate {
+        <<record>>
+        +int row
+        +int col
+    }
+
+    class AttackResult {
+        <<enumeration>>
+        MISS
+        HIT
+        SUNK
+        INVALID
+    }
+
+    Main ..> GameController : creates
+    Main ..> HumanPlayer : creates
+    Main ..> BotPlayer : creates
+    Main ..> ConsoleGameDisplay : creates
+    Main ..> Grid : creates
+
+    GameController --> Player : uses
+    GameController --> GameDisplay : uses
+
+    HumanPlayer ..|> Player : implements
+    BotPlayer ..|> Player : implements
+    ConsoleGameDisplay ..|> GameDisplay : implements
+
+    HumanPlayer --> GameDisplay : uses
+    Player --> Grid : uses
+    Grid --> Ship : contains
+    Grid ..> Coordinate : uses
+    Grid ..> AttackResult : returns
+    Ship ..> Coordinate : uses
+```
