@@ -59,7 +59,8 @@
 - `model.Coordinate`(record): Представляє координату на полі (`row`,`col`).
 - `model.AttackResult`(enum): Перелік результатів атаки (`HIT`, `MISS`, `SUNK`, `INVALID`).
 - `model.Ship`: Представляє корабель на полі (`Set<Coordinate> coordinates`, `Set<Coordinate> hits`, `occupies(...)`, `registerHit(...)`, `isSunk()`).
-- `model.Grid`: Представляє ігрове поле розміром `10x10`. Перевіряє правильність розміщення корабля та додає його (`placeShip(Ship)`), обробляє атаку (`processAttack(...)`) та перевіряє, чи знищено весь флот (`allShipsSunk()`).
+- `model.Grid`: Представляє ігрове поле розміром `10x10`. Перевіряє правильність розміщення корабля та додає його (`canPlaceShip(Ship)`,`placeShip(Ship)`), обробляє атаку (`processAttack(...)`) та перевіряє, чи знищено весь флот (`allShipsSunk()`).
+- `service.FleetPlacer`: Розміщує флот на полі автоматично або вручну через консоль
 - `interfaces.EnemyGridView`: Інтерфейс безпечного перегляду поля опонента без видимості не знищених кораблів.
 - `interfaces.Player`: Інтерфейс для гравця.
   - `chooseTarget(EnemyGridView enemyView)` - обирає координату для атаки на основі перегляду поля суперника.
@@ -74,7 +75,7 @@
 
 ```mermaid
 classDiagram
-    class Main { 
+    class Main {
         +main()
     }
 
@@ -100,6 +101,11 @@ classDiagram
     class BotPlayer {
         -Grid ownGrid
         +chooseTarget(EnemyGridView) Coordinate
+    }
+
+    class FleetPlacer {
+        +placeRandomly(Grid)
+        +placeManually(Grid, GameDisplay)
     }
 
     class EnemyGridView {
@@ -129,6 +135,7 @@ classDiagram
         -int size
         -List~Ship~ ships
         -Set~Coordinate~ attackedCoordinates
+        +canPlaceShip(Ship) boolean
         +placeShip(Ship) boolean
         +processAttack(Coordinate) AttackResult
         +isAlreadyAttacked(Coordinate) boolean
@@ -162,6 +169,7 @@ classDiagram
     Main ..> HumanPlayer : creates
     Main ..> BotPlayer : creates
     Main ..> ConsoleGameDisplay : creates
+    Main ..> FleetPlacer : creates
     Main ..> Grid : creates
 
     GameController --> Player : uses
@@ -172,6 +180,8 @@ classDiagram
     ConsoleGameDisplay ..|> GameDisplay : implements
 
     HumanPlayer --> GameDisplay : uses
+    FleetPlacer --> Grid : uses
+    FleetPlacer ..> GameDisplay : uses
     Player ..> EnemyGridView : uses
     Grid ..|> EnemyGridView : implements
     Grid --> Ship : contains
