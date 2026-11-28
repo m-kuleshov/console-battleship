@@ -58,16 +58,15 @@
 ### 2.2. Компоненти (Інтерфейси та Класи)
 - `model.Coordinate`(record): Представляє координату на полі (`row`,`col`).
 - `model.AttackResult`(enum): Перелік результатів атаки (`HIT`, `MISS`, `SUNK`, `INVALID`).
-- `model.Ship`: Представляє корабель на полі (`Set<Coordinate> coordinates`, `Set<Coordinate> hits`, `occupies(Coordinate)`, `registerHit(Coordinate)`, `isSunk()`).
-- `model.Grid`: Представляє ігрове поле розміром `10x10`. Перевіряє правильність розміщення корабля та додає його (`placeShip(Ship)`), обробляє атаку (`processAttack(Coordinate)`) та перевіряє, чи знищено весь флот (`allShipsSunk()`).
+- `model.Ship`: Представляє корабель на полі (`Set<Coordinate> coordinates`, `Set<Coordinate> hits`, `occupies(...)`, `registerHit(...)`, `isSunk()`).
+- `model.Grid`: Представляє ігрове поле розміром `10x10`. Перевіряє правильність розміщення корабля та додає його (`placeShip(Ship)`), обробляє атаку (`processAttack(...)`) та перевіряє, чи знищено весь флот (`allShipsSunk()`).
+- `interfaces.EnemyGridView`: Інтерфейс безпечного перегляду поля опонента без видимості не знищених кораблів.
 - `interfaces.Player`: Інтерфейс для гравця.
-  - `getName()` - повертає ім'я гравця.
-  - `getOwnGrid()` - повертає власне поле гравця.
-  - `chooseTarget(Grid enemyView)` - обирає ціль для атаки на основі вигляду суперника.
+  - `chooseTarget(EnemyGridView enemyView)` - обирає координату для атаки на основі перегляду поля суперника.
 - `service.HumanPlayer`(implements `Player`): Реалізація, що питає хід у консолі.
 - `service.BotPlayer`(implements `Player`): Реалізація ШІ.
 - `interfaces.GameDisplay`: Інтерфейс для вводу/виводу.
-  - `showWelcome()`, `showGrids(Grid ownGrid, Grid enemyView)`, `askCoordinate()`, `showAttackResult(String attackerName, Coordinate target, AttackResult result)`, `showGameResult(String winnerName)`
+  - `showWelcome()`, `showGrids(...)`, `askCoordinate()`, `showAttackResult(...)`, `showGameResult(...)`
 - `service.ConsoleGameDisplay`(implements `GameDisplay`): Реалізація вводу/виводу у консолі.
 - `GameController`: Головний клас, що керує грою. Отримує всі залежності через конструктор.
 
@@ -89,32 +88,30 @@ classDiagram
 
     class Player {
         <<interface>>
-        +getName() String
-        +getOwnGrid() Grid
-        +chooseTarget(Grid) Coordinate
+        +chooseTarget(EnemyGridView) Coordinate
     }
 
     class HumanPlayer {
-        -String name
         -Grid ownGrid
         -GameDisplay display
-        +getName() String
-        +getOwnGrid() Grid
-        +chooseTarget(Grid) Coordinate
+        +chooseTarget(EnemyGridView) Coordinate
     }
 
     class BotPlayer {
-        -String name
         -Grid ownGrid
-        +getName() String
-        +getOwnGrid() Grid
-        +chooseTarget(Grid) Coordinate
+        +chooseTarget(EnemyGridView) Coordinate
+    }
+
+    class EnemyGridView {
+        <<interface>>
+        +size() int
+        +isAttacked(Coordinate) boolean
     }
 
     class GameDisplay {
         <<interface>>
         +showWelcome()
-        +showGrids(Grid, Grid)
+        +showGrids(Grid, EnemyGridView)
         +askCoordinate() Coordinate
         +showAttackResult(String, Coordinate, AttackResult)
         +showGameResult(String)
@@ -122,7 +119,7 @@ classDiagram
 
     class ConsoleGameDisplay {
         +showWelcome()
-        +showGrids(Grid, Grid)
+        +showGrids(Grid, EnemyGridView)
         +askCoordinate() Coordinate
         +showAttackResult(String, Coordinate, AttackResult)
         +showGameResult(String)
@@ -175,7 +172,8 @@ classDiagram
     ConsoleGameDisplay ..|> GameDisplay : implements
 
     HumanPlayer --> GameDisplay : uses
-    Player --> Grid : uses
+    Player ..> EnemyGridView : uses
+    Grid ..|> EnemyGridView : implements
     Grid --> Ship : contains
     Grid ..> Coordinate : uses
     Grid ..> AttackResult : returns
