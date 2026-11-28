@@ -89,6 +89,7 @@ classDiagram
 
     class Player {
         <<interface>>
+        +getOwnGrid() Grid
         +chooseTarget(EnemyGridView) Coordinate
     }
 
